@@ -26,3 +26,4 @@ def read_log_file(file_path):        # file_path는 "매개변수(parameter)"
     except Exception as e:
         print(f"❌ 알 수 없는 오류가 발생했습니다: {e}")
 
+read_log_file("mission_computer_main.log")
