@@ -16,7 +16,7 @@ def read_log_file(file_path):        # file_path는 "매개변수(parameter)"
     파일이 없거나 문제가 생기면 오류 메시지를 보여줌.
     """
     try:
-        with open("mission_computer_main.log", "r", encoding="utf-8") as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             for line in f:
                 print(line.strip())  # 줄바꿈 제거 후 출력
     except FileNotFoundError:
