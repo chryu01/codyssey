@@ -1,4 +1,4 @@
-mport csv
+import csv
 
 # 1. CSV 파일 읽고 출력
 with open("Mars_Base_Inventory_List.csv", mode="r", encoding="utf-8") as file:
