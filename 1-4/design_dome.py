@@ -70,9 +70,12 @@ while True:
     material_input = input('재질 (glass / aluminum / steel) [기본값: glass]: ').strip().lower() #대문자로 들어와도 같은 것으로 인식하기 위해
     if material_input == '':
         material_input = 'glass' #아무것도 입력X->glass로 생각
+    if material_input not in ['glass','aluminum','steel']: #elif가 아닌 이유: 위의 조건과 배타적이지 않기 때문??
+        print('지원하지 않는 재질입니다. 기본값 glass로 설정합니다.')
+        material_input = 'glass'
     material = material_input #전역변수에 값 입력
 
-    thickness_input = input('두께 (cm) [기본값: 1]: ').strip()
+    thickness_input = input('두께 (cm) [기본값: 1]: ').strip() #.strip()은 공백을 제거하는 함수
     if thickness_input == '':
         thickness = 1   #아무것도 입력하지 않으면 1로 설정
     else:   #else가 없다면 try/except도 실행되어 에러가 발생할 수 있음
@@ -92,3 +95,4 @@ while True:
     print(f'재질 ⇒ {material}, 지름 ⇒ {diameter}, 두께 ⇒ {thickness}, 면적 ⇒ {area}, 무게 ⇒ {weight} kg') #print문의 ()안에 변수 지정 바로 해주기 위해 따옴표 앞에 f 사용
 
 print('\n프로그램을 종료합니다.')
+ 
