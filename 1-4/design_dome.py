@@ -4,10 +4,8 @@
 material = ''
 diameter = 0
 thickness = 1
-area = 0
-weight = 0
 
-def sphere_area(diameter, material='glass', thickness=1):
+def sphere_area(diameter=10, material='glass', thickness=1):
     global area, weight #전역변수로 설정
 
     # 반지름 구하기 (지름의 반)
@@ -16,8 +14,8 @@ def sphere_area(diameter, material='glass', thickness=1):
     # 반구 표면적 (2 * π * r^2)
     area = 2 * 3.1415926535 * (radius ** 2)
 
-    # 면적 단위 변환: m^2 → cm^2 (1m^2 = 10000cm^2)
-    area_cm2 = area * 10000
+    # 면적 단위 변환: m^2 → cm^2 (1m^2 = 1000cm^2)
+    area_cm2 = area * 1000
 
     # 재질 밀도 (g/cm³)
     if material == 'glass':
@@ -58,6 +56,8 @@ while True:
     if diameter_input.strip().lower() == 'exit': #대문자/소문자로 exit 입력시 끝
         break
         #else가 없는 이유는 if문 충족시 break가 돼서 try/except가 실행될 염려가 없기 때문.
+    if diameter_input == '':
+        diameter_input = 10 #아무 입력이 없으면 10m로 생각
     try:
         diameter = float(diameter_input) #들어온 값을 float로 변환해서 위에 정의한 diameter라는 전역변수에 넣어줌
         if diameter <= 0:
