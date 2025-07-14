@@ -1,18 +1,18 @@
-import platform #운영체제(OS), CPU 등에 대한 정보를 얻을 수 있는 표준 라이브러리
-import os #운영체제 관련 함수들 (예: CPU 개수 등)
-import json # 딕셔너리를 JSON 형식으로 보기 좋게 출력하기 위한 표준 라이브러리
+import platform
+import os
+import json
 import random
 import time
 import threading
 import multiprocessing
 
 try:
-    import psutil  # 시스템 정보 수집용으로 예외적으로 허용된 라이브러리(설치 여부 확인하는 과정)
+    import psutil
 except ImportError:
-    print("⚠️ psutil 모듈이 설치되어 있지 않습니다. 시스템 부하 정보를 가져올 수 없습니다.")
+    print("⚠️ psutil 모듈이 설치되어 있지 않습니다.")
     psutil = None
 
-class DummySensor:  #따로 써야 한다는 조건은 없었지만..문제7의 MissionComputer class를 사용하기 위해서는 ds가 사용될 수밖에 없어서
+class DummySensor:
     def __init__(self):
         self.env_values = {
             'mars_base_internal_temperature': 0.0,
@@ -34,79 +34,97 @@ class DummySensor:  #따로 써야 한다는 조건은 없었지만..문제7의 
     def get_env(self):
         return self.env_values
 
-ds = DummySensor() #DummySensor ds로 인스턴스화
+ds = DummySensor()
 
-class MissionComputer: #class 생성
+class MissionComputer:
     def __init__(self):
-        self.env_values = {
-            'mars_base_internal_temperature': 0.0,
-            'mars_base_external_temperature': 0.0,
-            'mars_base_internal_humidity': 0.0,
-            'mars_base_external_illuminance': 0.0,
-            'mars_base_internal_co2': 0.0,
-            'mars_base_internal_oxygen': 0.0
-        }
-        self.sensor = ds #MissionComputer 클래스 안에서 DummySensor를 사용할 수 있게 연결해주는 역할
+        self.env_values = ds.get_env()
+        self.sensor = ds
 
     def get_sensor_data(self):
         while True:
             self.sensor.set_env()
             self.env_values = self.sensor.get_env()
-
-            print('📡 환경 정보:')
-
-            # 소수점 3자리로 반올림한 새 딕셔너리 생성(round함수 사용)
-            #isinstance(값, 자료형)로 특정 자료형인지 확인/int, float인 경우 소수3자리로 반올림. 그렇지 않을 경우 그대로 사용
-            #dict.items()는 딕셔너리 순회 도구
             rounded_env_values = {
                 key: round(value, 3) if isinstance(value, (int, float)) else value
-                 for key, value in self.env_values.items()
-                }
-
+                for key, value in self.env_values.items()
+            }
+            print("📡 Sensor Data:")
             print(json.dumps(rounded_env_values, indent=4))
+            time.sleep(5)
 
-            time.sleep(5)  #5초마다 반복
+    def get_mission_computer_info(self):
+        while True:
+            try:
+                info = {
+                    "Operating System": platform.system(),
+                    "OS Version": platform.version(),
+                    "CPU Type": platform.processor(),
+                    "CPU Cores": os.cpu_count(),
+                    "Total Memory (GB)": round(psutil.virtual_memory().total / (1024 ** 3), 2) if psutil else "Unavailable"
+                }
+                print("🖥️ Mission Computer Info:")
+                print(json.dumps(info, indent=4))
+            except Exception as e:
+                print("❌ 시스템 정보 오류:", str(e))
+            time.sleep(20)
 
-    #여기부터 추가하는 메소드!!
-    def get_mission_computer_info(self): #메소드 이름 get_mission_computer_info
-        try:
-            info = {
-                "Operating System": platform.system(), #운영체계
-                "OS Version": platform.version(), #운영체계 버전
-                "CPU Type": platform.processor(), #CPU의 타입
-                "CPU Cores": os.cpu_count(), #CPU의 코어 수
-                "Total Memory (GB)": round(psutil.virtual_memory().total / (1024 ** 3), 2) if psutil else "Unavailable"  #메모리의 크기
-            }
-
-            print("🖥️ Mission Computer Info:")
-            print(json.dumps(info, indent=4))
-            return info
-
-        except Exception as e:
-            print("❌ 시스템 정보를 가져오는 도중 오류가 발생했습니다:", str(e))
-            return {}
-
-    #컴퓨터에 부하를 일으키는 코드
     def get_mission_computer_load(self):
-        try:
-            if psutil is None:
-                raise ImportError("psutil 모듈이 없어서 부하 정보를 가져올 수 없습니다.")
+        while True:
+            try:
+                if psutil is None:
+                    raise ImportError("psutil 모듈 없음.")
+                load = {
+                    "CPU Usage (%)": psutil.cpu_percent(interval=1),
+                    "Memory Usage (%)": psutil.virtual_memory().percent
+                }
+                print("📊 Mission Computer Load:")
+                print(json.dumps(load, indent=4))
+            except Exception as e:
+                print("❌ 시스템 부하 오류:", str(e))
+            time.sleep(20)
 
-            load = {
-                "CPU Usage (%)": psutil.cpu_percent(interval=1),    #CPU의 실시간 용량
-                "Memory Usage (%)": psutil.virtual_memory().percent #메모리의 실시간 용량
-            }
+# ---------- 멀티스레드 실행 ----------
+def run_threads():
+    runComputer = MissionComputer()
+    t1 = threading.Thread(target=runComputer.get_mission_computer_info)
+    t2 = threading.Thread(target=runComputer.get_mission_computer_load)
+    t3 = threading.Thread(target=runComputer.get_sensor_data)
+    t1.start()
+    t2.start()
+    t3.start()
+    t1.join()
+    t2.join()
+    t3.join()
 
-            print("📊 Mission Computer Load:")
-            print(json.dumps(load, indent=4))
-            return load
+# ---------- 멀티프로세스 실행 ----------
+def run_info():
+    MissionComputer().get_mission_computer_info()
 
-        except Exception as e:
-            print("❌ 시스템 부하 정보를 가져오는 도중 오류가 발생했습니다:", str(e))
-            return {}
+def run_load():
+    MissionComputer().get_mission_computer_load()
 
-# 인스턴스 생성 및 실행
+def run_sensor():
+    MissionComputer().get_sensor_data()
+
+def run_processes():
+    p1 = multiprocessing.Process(target=run_info)
+    p2 = multiprocessing.Process(target=run_load)
+    p3 = multiprocessing.Process(target=run_sensor)
+    p1.start()
+    p2.start()
+    p3.start()
+    p1.join()
+    p2.join()
+    p3.join()
+
+# ---------- 메인 ----------
 if __name__ == "__main__":
-    runComputer = MissionComputer() #인스턴스화
-    runComputer.get_mission_computer_info()
-    runComputer.get_mission_computer_load()
+    print("=== [1] 멀티스레드 실행 (1개 인스턴스) ===")
+    threading.Thread(target=run_threads).start()
+
+    time.sleep(3)  # 구분을 위한 대기
+
+    print("\n=== [2] 멀티프로세스 실행 (3개 인스턴스) ===")
+    multiprocessing.set_start_method("spawn")  # Windows 안전용
+    run_processes()
