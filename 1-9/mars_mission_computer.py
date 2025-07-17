@@ -67,7 +67,7 @@ class MissionComputer:
                 print(json.dumps(info, indent=4))
             except Exception as e:
                 print("❌ 시스템 정보 오류:", str(e))
-            time.sleep(20)
+            time.sleep(20) #20초에 한번씩 출력
 
     def get_mission_computer_load(self):
         while True:
@@ -82,7 +82,7 @@ class MissionComputer:
                 print(json.dumps(load, indent=4))
             except Exception as e:
                 print("❌ 시스템 부하 오류:", str(e))
-            time.sleep(20)
+            time.sleep(20)  #20초에 한번씩 출력
 
 # ---------- 멀티스레드 실행 ----------
 def run_threads():
