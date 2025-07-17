@@ -27,9 +27,8 @@ class MissionComputer:
 
             print('📡 환경 정보:')
 
-            # 소수점 3자리로 반올림한 새 딕셔너리 생성(round함수 사용)
-            #isinstance(값, 자료형)로 특정 자료형인지 확인/int, float인 경우 소수3자리로 반올림. 그렇지 않을 경우 그대로 사용
-            #dict.items()는 딕셔너리 순회 도구
+            
+        
             rounded_env_values = {
                 key: round(value, 3) if isinstance(value, (int, float)) else value
                  for key, value in self.env_values.items()
