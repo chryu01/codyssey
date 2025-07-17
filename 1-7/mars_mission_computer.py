@@ -4,27 +4,7 @@ import random
 import time  # 시간 라이브러리
 import json
 
-class DummySensor:
-    def __init__(self):
-        self.env_values = {
-            'mars_base_internal_temperature': 0.0,
-            'mars_base_external_temperature': 0.0,
-            'mars_base_internal_humidity': 0.0,
-            'mars_base_external_illuminance': 0.0,
-            'mars_base_internal_co2': 0.0,
-            'mars_base_internal_oxygen': 0.0
-        }
-
-    def set_env(self):
-        self.env_values['mars_base_internal_temperature'] = random.uniform(18.0, 30.0)
-        self.env_values['mars_base_external_temperature'] = random.uniform(0.0, 21.0)
-        self.env_values['mars_base_internal_humidity'] = random.uniform(50.0, 60.0)
-        self.env_values['mars_base_external_illuminance'] = random.uniform(500.0, 715.0)
-        self.env_values['mars_base_internal_co2'] = random.uniform(0.02, 0.1)
-        self.env_values['mars_base_internal_oxygen'] = random.uniform(4.0, 7.0)
-
-    def get_env(self):
-        return self.env_values
+from P06_mars_mission_computer import DummySensor
 
 ds = DummySensor() #DummySensor ds로 인스턴스화
 

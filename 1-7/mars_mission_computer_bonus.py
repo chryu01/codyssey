@@ -1,27 +1,8 @@
 import random
 import time
+import json
 
-class DummySensor:
-    def __init__(self):
-        self.env_values = {
-            'mars_base_internal_temperature': 0.0,
-            'mars_base_external_temperature': 0.0,
-            'mars_base_internal_humidity': 0.0,
-            'mars_base_external_illuminance': 0.0,
-            'mars_base_internal_co2': 0.0,
-            'mars_base_internal_oxygen': 0.0
-        }
-
-    def set_env(self):
-        self.env_values['mars_base_internal_temperature'] = random.uniform(18.0, 30.0)
-        self.env_values['mars_base_external_temperature'] = random.uniform(0.0, 21.0)
-        self.env_values['mars_base_internal_humidity'] = random.uniform(50.0, 60.0)
-        self.env_values['mars_base_external_illuminance'] = random.uniform(500.0, 715.0)
-        self.env_values['mars_base_internal_co2'] = random.uniform(0.02, 0.1)
-        self.env_values['mars_base_internal_oxygen'] = random.uniform(4.0, 7.0)
-
-    def get_env(self):
-        return self.env_values
+from P06_mars_mission_computer import DummySensor
 
 ds = DummySensor()
 
@@ -39,14 +20,18 @@ class MissionComputer:
             self.sensor.set_env()
             self.env_values = self.sensor.get_env()
 
+            for key in self.env_values:
+                self.history[key].append(self.env_values[key])
+
+
             # 출력
             print('📡 현재 환경 정보:')
-            print('{')
-            for key in self.env_values:
-                value = self.env_values[key]
-                print(f'  "{key}": {value:.3f}')
-                self.history[key].append(value)  # 누적 저장/해당 key의 list를 꺼내고 그 list에 value 값 저장
-            print('}')
+            rounded_env_values = {
+                key: round(value, 3) if isinstance(value, (int, float)) else value
+                 for key, value in self.env_values.items()
+                }
+
+            print(json.dumps(rounded_env_values, indent=4))
 
             count += 1 #반복문 도는 횟수 카운트
             time.sleep(5)
@@ -55,12 +40,18 @@ class MissionComputer:
             #1분(=60초=12회)
             if count % 12 == 0: #빠른 시연 위해 1분으로 설정, 후에 count % 60 == 0 으로 변경
                 print('\n🧮 최근 1분간 평균값:') #빠른 시연 위해 1분으로 설정. 후에 5분으로 변경
-                print('{')
+                averaged_values = {}
+
                 for key in self.history:
-                    values = self.history[key][-12:]  # 최근 12개만 사용/ 뒤에서부터 셀 때 - 사용/5분으로 변경시 [-60:]
-                    avg = sum(values) / len(values)
-                    print(f'  "{key}": {avg:.3f}') #각 key값들의 평균 json형식으로 출력
-                print('}')
+                    values = self.history[key][-12:]  # 최근 12개만 사용(5분일 경우 60)
+                    if values:  # 리스트가 비어있지 않다면
+                      avg = sum(values) / len(values)
+                      averaged_values[key] = round(avg, 3)  # 소수점 3자리까지
+                    else:  # 아직 값이 하나도 누적되지 않은 경우
+                      averaged_values[key] = None  # 또는 'N/A', 0.0 등으로 대체 가능
+
+                # JSON 형식으로 평균값 출력
+                print(json.dumps(averaged_values, indent=4))
 
                 print('\n▶ 계속하려면 Enter, 중지하려면 "stop" 입력:') #1분/5분에 한번 계속 이어갈지 멈출지 결정 가능
                 try:
