@@ -19,8 +19,8 @@ class DummySensor:
 
     #random하게 값을 받더라도 범위를 지정해줘야 해서
     #객체의 env_values라는 dict. 그 dict의 ['키']에 특정 범위의 값을 넣겠다!!
-    def set_env(self): #이후에 self.~의 형태로 접근 가능하게 하기 위해 ()안에 매개변수 self입력
-        self.env_values['mars_base_internal_temperature'] = random.uniform(18.0, 30.0) #dict의 key에 접근 가능하도록 []사용
+    def set_env(self):
+        self.env_values['mars_base_internal_temperature'] = random.uniform(18.0, 30.0)
         self.env_values['mars_base_external_temperature'] = random.uniform(0.0, 21.0)
         self.env_values['mars_base_internal_humidity'] = random.uniform(50.0, 60.0)
         self.env_values['mars_base_external_illuminance'] = random.uniform(500.0, 715.0)
