@@ -2,58 +2,36 @@ import platform #운영체제(OS), CPU 등에 대한 정보를 얻을 수 있는
 import os #운영체제 관련 함수들 (예: CPU 개수 등)
 import json # 딕셔너리를 JSON 형식으로 보기 좋게 출력하기 위한 표준 라이브러리
 
+from P06_mars_mission_computer import DummySensor
+
 try:
     import psutil  # 시스템 정보 수집용으로 예외적으로 허용된 라이브러리(설치 여부 확인하는 과정)
 except ImportError:
     print("⚠️ psutil 모듈이 설치되어 있지 않습니다. 시스템 부하 정보를 가져올 수 없습니다.")
     psutil = None
 
-class DummySensor:  #따로 써야 한다는 조건은 없었지만..문제7의 MissionComputer class를 사용하기 위해서는 ds가 사용될 수밖에 없어서
-    def __init__(self):
-        self.env_values = {
-            'mars_base_internal_temperature': 0.0,
-            'mars_base_external_temperature': 0.0,
-            'mars_base_internal_humidity': 0.0,
-            'mars_base_external_illuminance': 0.0,
-            'mars_base_internal_co2': 0.0,
-            'mars_base_internal_oxygen': 0.0
-        }
-
-    def set_env(self):
-        self.env_values['mars_base_internal_temperature'] = random.uniform(18.0, 30.0)
-        self.env_values['mars_base_external_temperature'] = random.uniform(0.0, 21.0)
-        self.env_values['mars_base_internal_humidity'] = random.uniform(50.0, 60.0)
-        self.env_values['mars_base_external_illuminance'] = random.uniform(500.0, 715.0)
-        self.env_values['mars_base_internal_co2'] = random.uniform(0.02, 0.1)
-        self.env_values['mars_base_internal_oxygen'] = random.uniform(4.0, 7.0)
-
-    def get_env(self):
-        return self.env_values
-
 ds = DummySensor() #DummySensor ds로 인스턴스화
 
-class MissionComputer: #class 생성
+class MissionComputer:
     def __init__(self):
-        self.env_values = {
-            'mars_base_internal_temperature': 0.0,
-            'mars_base_external_temperature': 0.0,
-            'mars_base_internal_humidity': 0.0,
-            'mars_base_external_illuminance': 0.0,
-            'mars_base_internal_co2': 0.0,
-            'mars_base_internal_oxygen': 0.0
-        }
-        self.sensor = ds #MissionComputer 클래스 안에서 DummySensor를 사용할 수 있게 연결해주는 역할
+        self.sensor = ds
+        self.env_values = {key: 0.0 for key in ds.env_values}
+        self.history = {key: [] for key in self.env_values}  # key : []로 누적값 저장할 dict생성
 
     def get_sensor_data(self):
+        count = 0 #반복 횟수 카운트 위해 count변수 설정
         while True:
+
+            # 센서 값 수집 및 저장
             self.sensor.set_env()
             self.env_values = self.sensor.get_env()
 
-            print('📡 환경 정보:')
+            for key in self.env_values:
+                self.history[key].append(self.env_values[key])
 
-            # 소수점 3자리로 반올림한 새 딕셔너리 생성(round함수 사용)
-            #isinstance(값, 자료형)로 특정 자료형인지 확인/int, float인 경우 소수3자리로 반올림. 그렇지 않을 경우 그대로 사용
-            #dict.items()는 딕셔너리 순회 도구
+
+            # 출력
+            print('📡 현재 환경 정보:')
             rounded_env_values = {
                 key: round(value, 3) if isinstance(value, (int, float)) else value
                  for key, value in self.env_values.items()
@@ -61,7 +39,35 @@ class MissionComputer: #class 생성
 
             print(json.dumps(rounded_env_values, indent=4))
 
-            time.sleep(5)  #5초마다 반복
+            count += 1 #반복문 도는 횟수 카운트
+            time.sleep(5)
+
+            # 5분(=300초 = 60회)마다 평균값 출력
+            #1분(=60초=12회)
+            if count % 12 == 0: #빠른 시연 위해 1분으로 설정, 후에 count % 60 == 0 으로 변경
+                print('\n🧮 최근 1분간 평균값:') #빠른 시연 위해 1분으로 설정. 후에 5분으로 변경
+                averaged_values = {}
+
+                for key in self.history:
+                    values = self.history[key][-12:]  # 최근 12개만 사용(5분일 경우 60)
+                    if values:  # 리스트가 비어있지 않다면
+                      avg = sum(values) / len(values)
+                      averaged_values[key] = round(avg, 3)  # 소수점 3자리까지
+                    else:  # 아직 값이 하나도 누적되지 않은 경우
+                      averaged_values[key] = None  # 또는 'N/A', 0.0 등으로 대체 가능
+
+                # JSON 형식으로 평균값 출력
+                print(json.dumps(averaged_values, indent=4))
+
+                print('\n▶ 계속하려면 Enter, 중지하려면 "stop" 입력:') #1분/5분에 한번 계속 이어갈지 멈출지 결정 가능
+                try:
+                    user_input = input() #input()에 try를 걸지 않으면 다른 행동 발생 시 오류 발생
+                except:
+                    user_input = ''
+
+                if user_input.strip().lower() == 'stop': #대문자/소문자 상관없이 stop이면 break
+                    print('System stopped...')
+                    break
 
     #여기부터 추가하는 메소드!!
     def get_mission_computer_info(self): #메소드 이름 get_mission_computer_info
