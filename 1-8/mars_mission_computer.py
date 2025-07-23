@@ -73,8 +73,8 @@ class MissionComputer:
     def get_mission_computer_info(self): #메소드 이름 get_mission_computer_info
         try:
             info = {
-                "Operating System": platform.system(), #운영체계
-                "OS Version": platform.version(), #운영체계 버전
+                "Operating System": platform.system(), #운영체계 이름을 문자열로
+                "OS Version": platform.version(), #운영체계 버전 
                 "CPU Type": platform.processor(), #CPU의 타입
                 "CPU Cores": os.cpu_count(), #CPU의 코어 수
                 "Total Memory (GB)": round(psutil.virtual_memory().total / (1024 ** 3), 2) if psutil else "Unavailable"  #메모리의 크기
