@@ -3,14 +3,13 @@ import string
 import time
 import zipfile
 import multiprocessing
-import os
 from datetime import datetime
 
 # 설정
-ZIP_FILE = 'emergency_storage_key.zip'
-PASSWORD_OUTPUT = 'password.txt'
-PASSWORD_LENGTH = 6
-CHARSET = string.ascii_lowercase + string.digits  # 소문자 + 숫자
+ZIP_FILE = 'emergency_storage_key.zip' #열고자 하는 zip 파일
+PASSWORD_OUTPUT = 'password.txt' #이후에 저장되는 결과 이름
+PASSWORD_LENGTH = 6 #비밀번호 자리수
+CHARSET = string.ascii_lowercase + string.digits  # 대문자도 소문자로 변환! 소문자+숫자
 
 # 공유 변수 (멀티프로세싱-safe)
 found_password = multiprocessing.Value('b', False)
@@ -22,13 +21,12 @@ def try_password(zip_path, password, found_flag):
     try:
         with zipfile.ZipFile(zip_path) as zf:
             zf.extractall(pwd=password.encode('utf-8'))
-        # 성공
         with open(PASSWORD_OUTPUT, 'w') as f:
             f.write(password)
         print(f"\n✅ Password found: {password}")
         found_flag.value = True
     except:
-        pass  # 실패한 경우
+        pass
 
 def worker(start_chars, zip_path, found_flag, counter):
     for prefix in start_chars:
@@ -47,24 +45,22 @@ def unlock_zip():
     print(f"🔐 Starting password cracking for: {zip_path}")
     start_time = time.time()
 
-    cpu_count = multiprocessing.cpu_count()
-    print(f"🧠 Using {cpu_count} processes...")
+    # 대소문자 및 숫자를 기준으로 그룹 분할
+    group1 = [ch for ch in CHARSET if 'A' <= ch <= 'L' or 'a' <= ch <= 'l']
+    group2 = [ch for ch in CHARSET if 'M' <= ch <= 'Z' or 'm' <= ch <= 'z']
+    group3 = [ch for ch in CHARSET if ch.isdigit()]  # '0' ~ '9'
 
-    # 시작 글자 기준으로 나누기 (예: a, b, c...z, 0~9)
-    start_chars = list(CHARSET)
-    split_prefixes = [[] for _ in range(cpu_count)]
-    for idx, ch in enumerate(start_chars):
-        split_prefixes[idx % cpu_count].append(ch)
+    start_groups = [group1, group2, group3]
 
-    # 프로세스 시작
     processes = []
-    for i in range(cpu_count):
-        p = multiprocessing.Process(target=worker,
-                                    args=(split_prefixes[i], zip_path, found_password, attempts))
+    for i in range(3):
+        p = multiprocessing.Process(
+            target=worker,
+            args=(start_groups[i], zip_path, found_password, attempts)
+        )
         p.start()
         processes.append(p)
 
-    # 진행 상황 출력
     try:
         while True:
             if found_password.value:
