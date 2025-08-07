@@ -31,7 +31,7 @@ class MissionComputer:
             }
             print("📡 Sensor Data:")
             print(json.dumps(rounded_env_values, indent=4))
-            time.sleep(5)
+            time.sleep(5) #5초에 한번씩 출력
 
     def get_mission_computer_info(self):
         while True:
@@ -63,29 +63,33 @@ class MissionComputer:
             except Exception as e:
                 print("❌ 시스템 부하 오류:", str(e))
             time.sleep(20)  #20초에 한번씩 출력
-
+'''
 # ---------- 멀티스레드 실행 ----------
 def run_threads():
     runComputer = MissionComputer()
-    t1 = threading.Thread(target=runComputer.get_mission_computer_info)
+    t1 = threading.Thread(target=runComputer.get_mission_computer_info) #스레드 제작
     t2 = threading.Thread(target=runComputer.get_mission_computer_load)
     t3 = threading.Thread(target=runComputer.get_sensor_data)
-    t1.start()
-    t2.start()
+    t1.start() #스레드 본격적으로 시작
+    t2.start() 
     t3.start()
-    t1.join()
+    t1.join() #스레드 종료 전에 main이 끝나지 않도록. 스레드가 끝날 때까지 대기하도록 하는 역할
     t2.join()
     t3.join()
-
+'''
+    
 # ---------- 멀티프로세스 실행 ----------
 def run_info():
-    MissionComputer().get_mission_computer_info()
+    runComputer1 = MissionComputer()
+    runComputer1.get_mission_computer_info()
 
 def run_load():
-    MissionComputer().get_mission_computer_load()
+    runComputer2 = MissionComputer()
+    runComputer2.get_mission_computer_load()
 
 def run_sensor():
-    MissionComputer().get_sensor_data()
+    runComputer3 = MissionComputer()
+    runComputer3.get_sensor_data()
 
 def run_processes():
     p1 = multiprocessing.Process(target=run_info)
@@ -98,13 +102,17 @@ def run_processes():
     p2.join()
     p3.join()
 
+
 # ---------- 메인 ----------
 if __name__ == "__main__":
+    '''
     print("=== [1] 멀티스레드 실행 (1개 인스턴스) ===")
     threading.Thread(target=run_threads).start()
+    '''
 
-    time.sleep(3)  # 구분을 위한 대기
+    print("멀티 프로세스 실행 시작")
 
     print("\n=== [2] 멀티프로세스 실행 (3개 인스턴스) ===")
     multiprocessing.set_start_method("spawn")  # Windows 안전용
     run_processes()
+
