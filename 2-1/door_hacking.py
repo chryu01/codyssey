@@ -16,7 +16,7 @@ CPU_COUNT = multiprocessing.cpu_count() #멀티프로세스 중 cpu 코어수를
 
 # === Load ZIP into memory (to avoid file I/O in every process) ===
 def load_zip_bytes(zip_path):
-    with open(zip_path, 'rb') as f: #zip파일 경로를 
+    with open(zip_path, 'rb') as f: #zip파일 경로를 알려주면 읽고 f로 만듦
         return f.read()
 
 # === Try a password on in-memory zip bytes ===
