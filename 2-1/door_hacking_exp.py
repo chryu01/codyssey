@@ -17,7 +17,7 @@ CPU_COUNT = multiprocessing.cpu_count() # 내 컴퓨터 CPU 코어 개수 확인
 # === ZIP 파일을 메모리에 올리는 함수 ===
 def load_zip_bytes(zip_path):
     # zip_path: 열고 싶은 ZIP 파일 경로
-    with open(zip_path, 'rb') as f:  # ZIP 파일을 '읽기 전용' + '바이너리 모드'로 열기
+    with open(zip_path, 'rb') as f:  # ZIP 파일을 '읽기 전용' + '바이너리 모드'로  열기
         return f.read()              # 파일 내용을 그대로 읽어서 메모리에 저장 (바이트 형태)
 
 # === 비밀번호를 시험하는 함수 ===
@@ -42,7 +42,7 @@ def worker(prefixes, zip_bytes, found_flag, result, counter):
         suffix_len = PASSWORD_LENGTH - len(prefix)  # 나머지 자리 수 계산
         # 나머지 자리 수만큼 가능한 모든 조합 만들기
         for combo in itertools.product(CHARS, repeat=suffix_len):
-            if found_flag.value:  # 다른 작업자가 찾았다면 즉시 중단
+            if found_flag.value:  # 다른 작업자가 찾았다면 즉시 중단j
                 break
             password = prefix + ''.join(combo)  # 접두사 + 나머지 글자 조합으로 비밀번호 생성
             if try_password(zip_bytes, password):  # 이 비밀번호로 열어보기
